@@ -65,8 +65,8 @@ export const getDefaultAppIdAndUrl = () => {
 
 export const getAppId = () => {
     const config_app_id = window.localStorage.getItem('config.app_id');
-    if (config_app_id) {
-        return parseInt(config_app_id, 10) || APP_IDS.PRODUCTION;
+    if (config_app_id && /^[0-9]+$/.test(config_app_id)) {
+        return parseInt(config_app_id, 10);
     }
     if (isStaging()) return APP_IDS.STAGING;
     if (isTestLink()) return APP_IDS.LOCALHOST;
@@ -135,11 +135,11 @@ export const redirectToLogin = () => {
 };
 
 // Debugging WebSocket issue
-console.log('Final WebSocket URL:', `wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=EN&brand=deriv`);
-const socket = new WebSocket(`wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=EN&brand=deriv`);
+const socket_url = `wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=EN&brand=deriv`;
+console.log('Final WebSocket URL:', socket_url);
+const socket = new WebSocket(socket_url);
 
 // Debugging translation issue
 const lang = window.localStorage.getItem('user_language') || 'en';
-console.log('Language setting:', lang);
 const translationPath = `/translations/${lang}.json`;
-console.log('Translation Path:', translationPath);
+console.log('Language setting:', lang, 'Translation Path:', translationPath);
