@@ -29,7 +29,7 @@ export const getCurrentProductionDomain = () =>
     Object.keys(domain_app_ids).find(domain => window.location.hostname === domain) || '';
 
 export const isProduction = () => {
-    const all_domains = Object.keys(domain_app_ids).map(domain => `(www\\.)?${domain.replace(/\./g, '\\.')}`);
+    const all_domains = Object.keys(domain_app_ids).map(domain => `(www\.)?${domain.replace(/\./g, '\\.')}`);
     return new RegExp(`^(${all_domains.join('|')})$`, 'i').test(window.location.hostname);
 };
 
@@ -59,6 +59,7 @@ export const getDefaultAppIdAndUrl = () => {
     const server_url = getDefaultServerURL();
     const current_domain = getCurrentProductionDomain();
     const app_id = domain_app_ids[current_domain] || APP_IDS.PRODUCTION;
+    console.log('Using App ID:', app_id, 'Server URL:', server_url);
     return { app_id, server_url };
 };
 
@@ -81,6 +82,8 @@ export const checkAndSetEndpointFromUrl = () => {
         const url_params = new URLSearchParams(location.search);
         const qa_server = url_params.get('qa_server');
         const app_id = url_params.get('app_id');
+
+        console.log('QA Server:', qa_server, 'App ID from URL:', app_id);
 
         if (qa_server && app_id && /^[0-9]+$/.test(app_id)) {
             localStorage.setItem('config.app_id', app_id);
@@ -110,10 +113,10 @@ export const generateOAuthURL = () => {
 
     const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'blue.derivws.com', 'ws.derivws.com'];
 
-    original_url.searchParams.set('app_id', '68643'); // Ensure it uses the correct app ID
+    original_url.searchParams.set('app_id', '68643');
 
     if (!valid_server_urls.includes(configured_server_url)) {
-        original_url.hostname = 'ws.derivws.com'; // Default to a known valid hostname
+        original_url.hostname = 'ws.derivws.com';
     }
     return original_url.toString();
 };
@@ -130,3 +133,13 @@ export const redirectToLogin = () => {
         window.location.href = generateOAuthURL();
     }
 };
+
+// Debugging WebSocket issue
+console.log('Final WebSocket URL:', `wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=EN&brand=deriv`);
+const socket = new WebSocket(`wss://${getSocketURL()}/websockets/v3?app_id=${getAppId()}&l=EN&brand=deriv`);
+
+// Debugging translation issue
+const lang = window.localStorage.getItem('user_language') || 'en';
+console.log('Language setting:', lang);
+const translationPath = `/translations/${lang}.json`;
+console.log('Translation Path:', translationPath);
