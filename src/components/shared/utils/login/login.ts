@@ -25,7 +25,7 @@ type TLoginUrl = {
 };
 
 export const loginUrl = ({ language }: TLoginUrl) => {
-    window.localStorage.setItem('config.server_url', 'ws.derivws.com'); // ✅ Set default server URL
+    window.localStorage.setItem('config.server_url', 'ws.derivws.com'); // ✅ Force 'ws.derivws.com' as the server
     const server_url = LocalStore.get('config.server_url');
     const signup_device_cookie = new (CookieStorage as any)('signup_device');
     const signup_device = signup_device_cookie.get('signup_device');
@@ -43,14 +43,15 @@ export const loginUrl = ({ language }: TLoginUrl) => {
         }/oauth2/authorize?app_id=${app_id}&l=${language}${marketing_queries}&brand=${website_name.toLowerCase()}`;
     };
 
+    // ✅ Ensure it only uses 'ws.derivws.com'
     if (server_url && /qa/.test(server_url)) {
-        console.log('🔹 loginUrl() -> QA Server URL:', server_url);
-        return `https://${server_url}/oauth2/authorize?app_id=${app_id}&l=${language}${marketing_queries}&brand=${website_name.toLowerCase()}`;
+        console.log('🔹 loginUrl() -> QA Server URL (Forced to ws.derivws.com):', server_url);
+        return `https://ws.derivws.com/oauth2/authorize?app_id=${app_id}&l=${language}${marketing_queries}&brand=${website_name.toLowerCase()}`;
     }
 
     const final_url = getOAuthUrl();
     console.log('🔹 loginUrl() -> Final OAuth URL:', final_url);
-    console.log('🔹 loginUrl() -> Server URL from Local Storage:', server_url);
+    console.log('🔹 loginUrl() -> Server URL (Forced to ws.derivws.com):', server_url);
 
     return final_url;
 };

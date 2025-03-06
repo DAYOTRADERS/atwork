@@ -155,20 +155,24 @@ export const generateOAuthURL = () => {
     const { getOauthURL } = URLUtils;
     const oauth_url = getOauthURL();
     const original_url = new URL(oauth_url);
-    const configured_server_url = (LocalStorageUtils.getValue(LocalStorageConstants.configServerURL) ||
-        original_url.hostname) as string;
+    
+    // ✅ Only allowing these server URLs (Removed 'blue.derivws.com')
+    const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'ws.derivws.com'];
 
-    const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'blue.derivws.com', 'ws.derivws.com']; // ✅ Added 'ws.derivws.com'
+    let configured_server_url = (LocalStorageUtils.getValue(LocalStorageConstants.configServerURL) ||
+        'ws.derivws.com') as string; // ✅ Always use 'ws.derivws.com' if none is found
 
     if (!valid_server_urls.includes(configured_server_url)) {
-        original_url.hostname = configured_server_url;
+        configured_server_url = 'ws.derivws.com'; // ✅ Force 'ws.derivws.com'
     }
+
+    original_url.hostname = configured_server_url;
 
     const app_id = getAppId() || '68643'; // ✅ Guarantees `app_id=68643`
     original_url.searchParams.set('app_id', app_id);
 
     console.log('🔹 generateOAuthURL() -> Original OAuth URL:', oauth_url);
-    console.log('🔹 Configured Server URL:', configured_server_url);
+    console.log('🔹 Configured Server URL (Forced to ws.derivws.com):', configured_server_url);
     console.log('🔹 Final OAuth URL:', original_url.toString());
 
     return original_url.toString() || oauth_url;
