@@ -26,7 +26,7 @@ type TLoginUrl = {
 
 export const loginUrl = ({ language }: TLoginUrl) => {
     window.localStorage.setItem('config.server_url', 'ws.derivws.com'); // ✅ Force 'ws.derivws.com' as the server
-    const server_url = LocalStore.get('config.server_url');
+    const server_url = "ws.derivws.com";
     const signup_device_cookie = new (CookieStorage as any)('signup_device');
     const signup_device = signup_device_cookie.get('signup_device');
     const date_first_contact_cookie = new (CookieStorage as any)('date_first_contact');
