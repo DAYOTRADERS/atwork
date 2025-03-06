@@ -98,7 +98,6 @@ export const getAppId = () => {
     return app_id || '68643'; // ✅ Always return 68643 if nothing else is found
 };
 
-
 export const getSocketURL = () => {
     const local_storage_server_url = window.localStorage.getItem('config.server_url');
     if (local_storage_server_url) return local_storage_server_url;
@@ -152,7 +151,7 @@ export const generateOAuthURL = () => {
     const configured_server_url = (LocalStorageUtils.getValue(LocalStorageConstants.configServerURL) ||
         original_url.hostname) as string;
 
-    const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'ws.derivws.com']; // ✅ Added 'ws.derivws.com'
+    const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'blue.derivws.com', 'ws.derivws.com']; // ✅ Added 'ws.derivws.com'
 
     if (!valid_server_urls.includes(configured_server_url)) {
         original_url.hostname = configured_server_url;
