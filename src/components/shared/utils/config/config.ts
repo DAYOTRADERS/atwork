@@ -95,8 +95,15 @@ export const getAppId = () => {
         app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.PRODUCTION;
     }
 
-    return app_id || '68643'; // ✅ Always return 68643 if nothing else is found
+    app_id = app_id || '68643'; // ✅ Always return 68643 if nothing else is found
+
+    console.log('🔹 getAppId() -> App ID:', app_id);
+    console.log('🔹 Current Domain:', current_domain);
+    console.log('🔹 Local Storage App ID:', config_app_id);
+
+    return app_id;
 };
+
 
 export const getSocketURL = () => {
     const local_storage_server_url = window.localStorage.getItem('config.server_url');
@@ -160,5 +167,10 @@ export const generateOAuthURL = () => {
     const app_id = getAppId() || '68643'; // ✅ Guarantees `app_id=68643`
     original_url.searchParams.set('app_id', app_id);
 
+    console.log('🔹 generateOAuthURL() -> Original OAuth URL:', oauth_url);
+    console.log('🔹 Configured Server URL:', configured_server_url);
+    console.log('🔹 Final OAuth URL:', original_url.toString());
+
     return original_url.toString() || oauth_url;
 };
+

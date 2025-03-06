@@ -44,8 +44,13 @@ export const loginUrl = ({ language }: TLoginUrl) => {
     };
 
     if (server_url && /qa/.test(server_url)) {
+        console.log('🔹 loginUrl() -> QA Server URL:', server_url);
         return `https://${server_url}/oauth2/authorize?app_id=${app_id}&l=${language}${marketing_queries}&brand=${website_name.toLowerCase()}`;
     }
 
-    return getOAuthUrl();
+    const final_url = getOAuthUrl();
+    console.log('🔹 loginUrl() -> Final OAuth URL:', final_url);
+    console.log('🔹 loginUrl() -> Server URL from Local Storage:', server_url);
+
+    return final_url;
 };
