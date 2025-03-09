@@ -1,6 +1,7 @@
 import { LocalStorageConstants, LocalStorageUtils, URLUtils } from '@deriv-com/utils';
 import { isStaging } from '../url/helpers';
 
+// Define app IDs
 export const APP_IDS = {
     LOCALHOST: 36300,
     TMP_STAGING: 64584,
@@ -10,12 +11,14 @@ export const APP_IDS = {
     PRODUCTION: 65555,
     PRODUCTION_BE: 65556,
     PRODUCTION_ME: 65557,
-    CUSTOM: 68643, // Add your custom app ID here
+    CUSTOM: 68643, // Your custom app ID
 };
 
+// Livechat credentials
 export const livechat_license_id = 12049137;
 export const livechat_client_id = '66aa088aad5a414484c1fd1fa8a5ace7';
 
+// Map domains to app IDs
 export const domain_app_ids = {
     'master.bot-standalone.pages.dev': APP_IDS.TMP_STAGING,
     'staging-dbot.deriv.com': APP_IDS.STAGING,
@@ -24,18 +27,21 @@ export const domain_app_ids = {
     'dbot.deriv.com': APP_IDS.PRODUCTION,
     'dbot.deriv.be': APP_IDS.PRODUCTION_BE,
     'dbot.deriv.me': APP_IDS.PRODUCTION_ME,
-    'your-custom-domain.com': APP_IDS.CUSTOM, // Associate your custom domain with the new app ID
+    'chiply.netlify.app': APP_IDS.CUSTOM, // Add your custom domain
 };
 
+// Get the current production domain
 export const getCurrentProductionDomain = () =>
     !/^staging\./.test(window.location.hostname) &&
     Object.keys(domain_app_ids).find(domain => window.location.hostname === domain);
 
+// Check if the current environment is production
 export const isProduction = () => {
     const all_domains = Object.keys(domain_app_ids).map(domain => `(www\\.)?${domain.replace('.', '\\.')}`);
     return new RegExp(`^(${all_domains.join('|')})$`, 'i').test(window.location.hostname);
 };
 
+// Check if the current link is a test link
 export const isTestLink = () => {
     return (
         window.location.origin?.includes('.binary.sx') ||
@@ -44,8 +50,10 @@ export const isTestLink = () => {
     );
 };
 
+// Check if the current environment is localhost
 export const isLocal = () => /localhost(:\d+)?$/i.test(window.location.hostname);
 
+// Get the default server URL
 const getDefaultServerURL = () => {
     if (isTestLink()) {
         return 'ws.derivws.com';
@@ -67,6 +75,7 @@ const getDefaultServerURL = () => {
     return server_url;
 };
 
+// Get the default app ID and server URL
 export const getDefaultAppIdAndUrl = () => {
     const server_url = getDefaultServerURL();
 
@@ -75,11 +84,12 @@ export const getDefaultAppIdAndUrl = () => {
     }
 
     const current_domain = getCurrentProductionDomain() ?? '';
-    const app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.CUSTOM; // Set default app ID to your custom app ID
+    const app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.CUSTOM; // Default to your custom app ID
 
     return { app_id, server_url };
 };
 
+// Get the app ID based on the environment
 export const getAppId = () => {
     let app_id = null;
     const config_app_id = window.localStorage.getItem('config.app_id');
@@ -92,12 +102,13 @@ export const getAppId = () => {
     } else if (isTestLink()) {
         app_id = APP_IDS.LOCALHOST;
     } else {
-        app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.CUSTOM; // Set default app ID to your custom app ID
+        app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.CUSTOM; // Default to your custom app ID
     }
 
     return app_id;
 };
 
+// Get the socket URL
 export const getSocketURL = () => {
     const local_storage_server_url = window.localStorage.getItem('config.server_url');
     if (local_storage_server_url) return local_storage_server_url;
@@ -107,6 +118,7 @@ export const getSocketURL = () => {
     return server_url;
 };
 
+// Check and set the endpoint from the URL
 export const checkAndSetEndpointFromUrl = () => {
     if (isTestLink()) {
         const url_params = new URLSearchParams(location.search.slice(1));
@@ -137,6 +149,7 @@ export const checkAndSetEndpointFromUrl = () => {
     return false;
 };
 
+// Get the debug service worker flag
 export const getDebugServiceWorker = () => {
     const debug_service_worker_flag = window.localStorage.getItem('debug_service_worker');
     if (debug_service_worker_flag) return !!parseInt(debug_service_worker_flag);
@@ -144,21 +157,18 @@ export const getDebugServiceWorker = () => {
     return false;
 };
 
+// Generate the OAuth URL with the custom redirect URL
 export const generateOAuthURL = () => {
     const { getOauthURL } = URLUtils;
     const oauth_url = getOauthURL();
     const original_url = new URL(oauth_url);
-    const configured_server_url = (LocalStorageUtils.getValue(LocalStorageConstants.configServerURL) ||
-        localStorage.getItem('config.server_url') ||
-        original_url.hostname) as string;
 
-    const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'blue.derivws.com'];
-    if (
-        typeof configured_server_url === 'string'
-            ? !valid_server_urls.includes(configured_server_url)
-            : !valid_server_urls.includes(JSON.stringify(configured_server_url))
-    ) {
-        original_url.hostname = configured_server_url;
-    }
-    return original_url.toString() || oauth_url;
+    // Set the redirect URL to your custom domain
+    original_url.hostname = 'chiply.netlify.app';
+
+    // Add query parameters for OAuth
+    const redirect_uri = 'https://chiply.netlify.app/oauth/callback'; // Adjust the path if needed
+    original_url.searchParams.set('redirect_uri', redirect_uri);
+
+    return original_url.toString();
 };
