@@ -10,6 +10,7 @@ export const APP_IDS = {
     PRODUCTION: 65555,
     PRODUCTION_BE: 65556,
     PRODUCTION_ME: 65557,
+    CUSTOM: 68643, // Add your custom app ID here
 };
 
 export const livechat_license_id = 12049137;
@@ -23,6 +24,7 @@ export const domain_app_ids = {
     'dbot.deriv.com': APP_IDS.PRODUCTION,
     'dbot.deriv.be': APP_IDS.PRODUCTION_BE,
     'dbot.deriv.me': APP_IDS.PRODUCTION_ME,
+    'your-custom-domain.com': APP_IDS.CUSTOM, // Associate your custom domain with the new app ID
 };
 
 export const getCurrentProductionDomain = () =>
@@ -73,15 +75,13 @@ export const getDefaultAppIdAndUrl = () => {
     }
 
     const current_domain = getCurrentProductionDomain() ?? '';
-    const app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.PRODUCTION;
+    const app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.CUSTOM; // Set default app ID to your custom app ID
 
     return { app_id, server_url };
 };
 
 export const getAppId = () => {
-    let app_id = '68643'; // ✅ Default to your App ID (68643)
-    window.localStorage.setItem('config.app_id', '68643'); // ✅ Ensure App ID is stored
-
+    let app_id = null;
     const config_app_id = window.localStorage.getItem('config.app_id');
     const current_domain = getCurrentProductionDomain() ?? '';
 
@@ -92,18 +92,11 @@ export const getAppId = () => {
     } else if (isTestLink()) {
         app_id = APP_IDS.LOCALHOST;
     } else {
-        app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.PRODUCTION;
+        app_id = domain_app_ids[current_domain as keyof typeof domain_app_ids] ?? APP_IDS.CUSTOM; // Set default app ID to your custom app ID
     }
-
-    app_id = app_id || '68643'; // ✅ Always return 68643 if nothing else is found
-
-    console.log('🔹 getAppId() -> App ID:', app_id);
-    console.log('🔹 Current Domain:', current_domain);
-    console.log('🔹 Local Storage App ID:', config_app_id);
 
     return app_id;
 };
-
 
 export const getSocketURL = () => {
     const local_storage_server_url = window.localStorage.getItem('config.server_url');
@@ -155,26 +148,17 @@ export const generateOAuthURL = () => {
     const { getOauthURL } = URLUtils;
     const oauth_url = getOauthURL();
     const original_url = new URL(oauth_url);
-    
-    // ✅ Only allowing these server URLs (Removed 'blue.derivws.com')
-    const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'ws.derivws.com'];
+    const configured_server_url = (LocalStorageUtils.getValue(LocalStorageConstants.configServerURL) ||
+        localStorage.getItem('config.server_url') ||
+        original_url.hostname) as string;
 
-    let configured_server_url = (LocalStorageUtils.getValue(LocalStorageConstants.configServerURL) ||
-        'ws.derivws.com') as string; // ✅ Always use 'ws.derivws.com' if none is found
-
-    if (!valid_server_urls.includes(configured_server_url)) {
-        configured_server_url = 'ws.derivws.com'; // ✅ Force 'ws.derivws.com'
+    const valid_server_urls = ['green.derivws.com', 'red.derivws.com', 'blue.derivws.com'];
+    if (
+        typeof configured_server_url === 'string'
+            ? !valid_server_urls.includes(configured_server_url)
+            : !valid_server_urls.includes(JSON.stringify(configured_server_url))
+    ) {
+        original_url.hostname = configured_server_url;
     }
-
-    original_url.hostname = configured_server_url;
-
-    const app_id = getAppId() || '68643'; // ✅ Guarantees `app_id=68643`
-    original_url.searchParams.set('app_id', app_id);
-
-    console.log('🔹 generateOAuthURL() -> Original OAuth URL:', oauth_url);
-    console.log('🔹 Configured Server URL (Forced to ws.derivws.com):', configured_server_url);
-    console.log('🔹 Final OAuth URL:', original_url.toString());
-
     return original_url.toString() || oauth_url;
 };
-
